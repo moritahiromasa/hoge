@@ -1,0 +1,114 @@
+
+\documentclass[dvipdfmx]{jsarticle}
+\title{論文リスト}
+\author{学籍番号20C1119 森田大雅}
+\date{\today}
+\begin{document}
+\maketitle
+
+\section{DCGAN}
+\parindent=0pt https://arxiv.org/abs/1511.06434
+\\\\
+
+2016年と前のものだが当時は畳み込みを使った教師あり学習が幅広く使われているのに対し、畳み込みを使った教師なし学習はあまり注目されていなかった。そこで筆者らは、教師ありとなしの中間的なモデルと作り、畳み込みを使った教師なし学習の橋渡しをしようと考えた。本論文の提案は、GANを学習することで良い画像表現ができるという使い道があるが、特徴抽出器として生成器と識別器の部分を再利用すれば、教師ありのタスクにも使える。
+そこで次のような実験を行っている。CIFAR-10というデータセットを用いて、特徴を学習するk-meansとの比較を行った。単一層で一斉に特徴抽出を行えるよう上手く調整されたもの、複数の層に拡張したものなどと、DCGANと分類器LS\_VMを組み合わせたものを比較した。
+\\
+
+本論文では、識別器が出力した特徴がラベル付けはされていないがそれと同じように使うことができるのかを調べている。CIFAR-10のデータセットを使い、識別の精度を調べる実験を行っている。実験より、有用であることが示された。本論文はGANの新しいモデルの提案にグルーピングできる。
+\section{LSGAN}
+\parindent=0pt https://arxiv.org/abs/1611.04076
+\\\\
+
+論文が書かれた当時の標準的なGANは識別器(Discriminator)に活性化関として数Sigmoid関数を、損失関数として交差エントロピーを用いる。しかし損失関数が勾配消失問題という問題を引き起こし、学習が上手く行かない恐れがある。この問題を解消するために本論文のLSGANが作られた。論文によると標準的なGANはDCGANのことを指し、このモデルのDの損失関数を最小二乗誤差に変えること提案をしている。これにより、生成画像のクオリティが高くなることと、学習の安定性が定質的に示されている。以下の２つの実験を行っている。
+\begin{enumerate}
+\item いくつかのデータセットで、標準的なGAN(DCGANとEBGAN)とLSGANの比較
+\item LSGANと標準的なGANとの安定性を比較
+\end{enumerate}
+データセットはLSVNという４つの場面(寝室、協会、ダイニングルーム、会議室)の画像のデータセットを用いている。
+実験１は生成画像を可視化したシンプルなである。実験２は4つのパターンに分けて安定性を評価している。Gのbatch Normalization（バッチ正規化）を取り除いた場合と、GとDの両方のbatch normalizationを取り除いた場合。また、optimizer（最適化？）にAdamとRMSPropをそれぞれ用いた場合である。
+\\
+$\ast$ 本論文の文献[12]によるとモデルの性能にはoptimizerの選択が重要になっているため、文献[34]のAdamと論文[35]のRMSPropという２つのoptimizerを用いて安定性を評価している。（おそらく文献[12]で[34]と[35]が用いられたからそれに同じことをしてモデルの性能を評価していると思われる）
+\\\\実験1では４つの場面(寝室、協会、ダイニングルーム、会議室)のデータセットを用いた。実験結果からLSGANが他のGANよりも生成画像の質が良かった。実験２では安定性を評価するために、２つのoptimizerとG、Dのbatch normalizationを取り除いた４つの場合分け実験を行った。$\ast $BNgdはG、DのBatch Normalizationを取り除いたことを意味する。
+
+\begin{enumerate}
+\item BNg wuth Adam 
+\item BNg with RMSProp 
+\item BNgd wuth Adam 
+\item BNgd with RMSProp
+\end{enumerate}
+
+実験結果から全体的にLSGANの方が画像の質が良く、またAdamよりもRMSPropが、そしてRMSPropの中でもBNgdよりBNgが他のよりも安定して学習できることが示された。よってLSGANのBNg with RMSPropが最も安定性があると示されている。本論文はGANのモデルの改良にグルーピングできる。
+
+
+\section{On the Evaluation of Generative Adversarial Networks By Discriminative Models}
+\parindent=0pt https://arxiv.org/pdf/2010.03549.pdf
+\\\\
+GANsによって画像などをよりリアルに生成できるようになったが、殆どが可視化することによって質を評価している。しかし、画像の分野を超えると視覚的に評価するのが難しい。そこで定量的に評価できる仕組みが必要であり、それによって画像の分野でも異なるGANsのモデルの比較などに使用することができる。よく使用される評価指標にIS(Inception Score)とFID Score(Frechet Inception Distance Score)があるが、どちらも決定的な欠点がある。ISはImageNetのデータセットを使った学習済みモデルである。非効率的なのと正しく機能するように改良しなければ評価を行えない。FIDはISの欠点の大部分を改善したものだが、画像の分野でしか評価が行えない。
+\\
+この論文では生成器の部分にWGANs（WGANsはDCGANと同じ構造）を、識別器の部分にSiamese nueral networks(SNNs)を用いている。生成器の部分は適宜変更しているが、識別器にSNNsを用いるモデルを今回提案している。
+\\
+画像の分野、GANsのモデル評価、画像以外の分野に適用ができるように実験を行う。
+\begin{enumerate}
+\item quality(人間の感覚に合うように質)を評価
+\item 本モデルが頑強であることを示すためにGANsで発生しやすい問題(今回は以下の３つ)が起こっているかを調査
+  \begin{enumerate}
+    \item mode dropping(モード崩壊)
+    \item mode invention(訳不明)
+    \item intra-mode collapse
+  \end{enumerate}
+\item いくつかのGANsのモデルを使用し、FIDとSDSの比較
+\item 画像以外の分野でも適用
+\end{enumerate}
+つまり１と２で画像の分野、３でGANsのモデル評価、４で画像以外の分野に適用である。４つ目だが、今回は医療分野(脳の活動)のデータを使用している。生成器の部分に以下の３つ
+\begin{enumerate}
+\item VAE(Variational Autoencoder)
+\item medGAN
+\item corGAN
+\end{enumerate}
+を、識別器に
+\begin{enumerate}
+\item SDS(Siamese distance score)
+\item MMD(Maxumum Mean Discrepancy)
+\end{enumerate}
+を用いて比較を行っている。結果として生成器はVAE、識別器はSDSを用いた場合が最も良い点数だった。
+\\
+結論として、１と２からISより、３と４からからFIDよりも優位であることが示されている。本論文はGANの新しい評価指標の提案にグルーピングできる。
+
+\section{Geometry Score}
+\parindent=0pt https://arxiv.org/abs/1802.02664
+\\\\
+GANの研究でよく取り上げられる問題が生成画像の質を定量的に評価することと、どんなモデルでも適切にモード崩壊を検知することである。本論文では生成データのgeometrial properties(幾何的性質)を計算し、実際のデータと比較することで、GANの性能を測る。manifold hypothesis(多様体仮設)という幾何学の分野を用いている。なぜこの仮設を用いるのかは直感的と書かれている。データ分布が多様体に対応しているように見えるようなことが書かれている気がするが、私は上手く読み込むことができず分からなかった。実験結果とこの直感がよく一致しており、得られて結果から様々なモデルでの比較に使用することができるとのこと。本論文はGANの新しい評価指標の提案にグルーピングできる。
+\
+\section{APA}
+\parindent=0pt https://arxiv.org/abs/2111.06849
+\\\\
+最新のGANは大量のデータを必要とし高画質の画像を生成するが、中にはプライバシーや著作権などの問題が発生する可能性のあるデータもある。
+そのときに必ずしも大量のデータを揃えられるとは限らない。そこでデータに制限があってもそれなりの画像を生成できるこのモデルが提案された。
+近年の研究からデータが量、質のどちらかだとしても不十分の場合、識別器が過学習を起こすことが分かっている。
+そこでこのモデルにはData Augumentationと呼ばれるデータの水増しに加えて、生成器が識別器の過学習を防ぎ力を持つように工夫がされている。\\
+生成過程は以下のようになっている
+\begin{enumerate}
+  \item サンプル画像を生成器へ入力し、偽画像が生成される
+  \item 生成した偽画像も時々、確率$p$で真の画像として識別器に与える
+  \item 識別器が予測する過学習の度合い$\lambda$に応じて、確率$p$を上下げする
+\end{enumerate}
+
+
+\parindent=0pt 実験はGANでよく用いられるIS（Inception Score）とFID（Frechet Inception Distance）と呼ばれる２つの評価指標を用いて評価を行っており、実験結果からStyleGAN2よりも良かったことが示されている。
+
+
+\section{StyleGAN3}
+\parindent=0pt https://nvlabs.github.io/stylegan3/
+\\途中
+\section{Improved Techniques for Training GANs}
+GANの学習はナッシュ均衡を見つけること一つの要因である.
+しかし、ナッシュ均衡は特別な場合のみアルゴリズムが存在する. 
+連続型の変数で、次元数も高いためなかなか収束しない. 
+一般的にはナッシュ均衡を見つけるよりも、勾配降下法を用いて価値関数の小さな値を見つけるようモデルが作られている. 
+ナッシュ均衡を求めることに専念したら、ずっと探し続ける可能性があるので収束できるように工夫する. 
+それが「Feature matching」と「Minibatch discrimination」の二つである. 
+\\
+\\
+途中
+
+\end{document}
